@@ -1,0 +1,27 @@
+{
+  "title": "CISA Catalog of Known Exploited Vulnerabilities",
+  "catalogVersion": "2026.10.30",
+  "count": 2,
+  "vulnerabilities": [
+    {
+      "cveID": "CVE-2026-97631",
+      "vendorProject": "TianoCore",
+      "product": "EDK II",
+      "vulnerabilityName": "EDK II PXE Driver Pre-Boot Code Execution",
+      "dateAdded": "2026-10-28",
+      "shortDescription": "A buffer overflow in the UEFI PXE boot driver allows secure-boot and measured-boot integrity bypass, enabling a bootkit before the OS loads.",
+      "requiredAction": "Apply firmware updates.",
+      "knownRansomwareCampaignUse": "Unknown"
+    },
+    {
+      "cveID": "CVE-2026-55123",
+      "vendorProject": "Acme",
+      "product": "WebPortal",
+      "vulnerabilityName": "Acme WebPortal SQL Injection",
+      "dateAdded": "2026-10-29",
+      "shortDescription": "A generic SQL injection in a web portal login form allows data exfiltration.",
+      "requiredAction": "Apply updates.",
+      "knownRansomwareCampaignUse": "Known"
+    }
+  ]
+}

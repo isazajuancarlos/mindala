@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+#
+# Protocolo «solo local, build sin red» (decisión de Juan, 2026-08-14): TODAS las
+# dependencias salen de `vendor/`, dentro del repositorio. El build no descarga nada:
+# ni el índice de crates.io, ni un `.crate`, ni un espejo de git.
+#
+# El positivo de control NO es `--offline` (que puede tirar de la caché de ~/.cargo).
+# Lo que discrimina es la caché VACÍA:
+#
+#     CARGO_HOME=$(mktemp -d) cargo build --offline     # Linux
+#     $env:CARGO_HOME=(New-Item -ItemType Directory -Path $env:TEMP\ch -Force); cargo build --offline   # Windows
+#
+# Rutas RELATIVAS a propósito: cargo las escribe absolutas y eso ata el repo a esta
+# máquina. `vendor/` no está en .gitignore: se versiona con el árbol.
+
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"

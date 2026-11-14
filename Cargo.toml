@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2026 Juan Carlos Isaza
+# SPDX-License-Identifier: MIT
+[package]
+name = "mindala"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+authors = ["Juan Carlos Isaza"]
+publish = false
+
+[dependencies]
+# CLI. `env` para leer GITHUB_TOKEN opcional (keyless por defecto, D31 regla 1).
+clap = { version = "4", features = ["derive", "env"] }
+# Cliente HTTP — rustls, NUNCA openssl (binario portable, sin libssl). Igual que nexus.
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "gzip", "query"] }
+tokio = { version = "1.53", default-features = false, features = [
+    "rt-multi-thread", "macros", "time",
+] }
+# BD: SQLite, la memoria de mindala (D5/D20). Consultas en runtime (sin DATABASE_URL
+# en tiempo de compilación): keyless también para el build.
+sqlx = { version = "0.9", default-features = false, features = [
+    "runtime-tokio", "sqlite", "macros", "migrate", "chrono",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
+anyhow = "1"
+# Categoría general Unicode para SANEAR texto no confiable de feeds antes de imprimirlo
+# al lazo del criterio (defensa en profundidad anti inyección de terminal/ofuscación). Ya
+# estaba vendorizado como dep transitiva de `url`; se promueve a directo. Pura-datos, MIT.
+unicode-properties = { version = "0.1.4", default-features = false, features = ["general-category"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+# --- Estándar de nacimiento (directiva 26): dependencias optimizadas en debug ---
+[profile.dev.package."*"]
+opt-level = 3
+
+# PUERTA de buenas prácticas: el CI corre `-D warnings`, así que aquí solo entra lo
+# que se está dispuesto a BLOQUEAR y que `clippy --fix` limpia a cero.
+[lints.clippy]
+redundant_clone = "deny"
+needless_collect = "deny"

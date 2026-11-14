@@ -1,101 +1,147 @@
-# mindala
+<!--
+SPDX-FileCopyrightText: 2026 Juan Carlos Isaza
+SPDX-License-Identifier: MIT
+-->
+# mindala — el mercader de ideas del universo Xiliux
 
-Technical intelligence aggregator: discovers, categorizes, and queues findings from public sources for human review and adoption. MIT. Rust.
+Los **mindalá** eran los mercaderes muiscas de larga distancia: traían materiales
+valiosos de mercados lejanos para enriquecer a toda la sociedad. Esta herramienta
+hace lo mismo con TÉCNICAS de software — sale a GitHub, encuentra lo valioso, lo
+**categoriza** hacia el proyecto de Xiliux que lo aprovecha, y lo encola para que
+el criterio lo estudie.
 
-**English** · [Español](#español)
+Reparto **80/20** (patrón de nexus): el programa descubre / categoriza / encola
+(el 80% mecánico); el criterio (Claude-en-el-loop) estudia el fuente, respeta la
+licencia y decide adoptar o descartar (el 20% que juzga). El juicio no se automatiza.
 
----
+Diseño completo: `conocimiento/proyectos/mindala/DISENO.md`.
 
-## The code is not hosted here
+## Uso
 
-Since August 2026 the source of this project **is not hosted on GitHub**, and it is not distributed through any package registry.
+```sh
+# R1 · descubrir por topic, categorizar y encolar (keyless: 60 req/h sin token).
+mindala buscar --topic webauthn --min-estrellas 100
+mindala buscar --topic post-quantum --lenguaje rust --pushed-desde 2026-01-01
+GITHUB_TOKEN=ghp_xxx mindala buscar --topic recon   # PAT opcional: 5000 req/h
 
-This is not abandonment, not an incident, and there was no breach. It is a decision: through 2026 the package registries and code-hosting platforms were hit by sustained, chained supply-chain attacks — the Shai-Hulud worm, ChainDrop in August, malicious extensions that exfiltrated thousands of private repositories. Hosting the source there stopped being a neutral decision.
+# R2 · triaje: listar, ver la ficha, clonar para estudiar, y sentar el veredicto.
+mindala cola                       # todos los pendientes
+mindala cola --destino quipu       # solo los de un proyecto
+mindala ver 306366900              # ficha completa (avisa si la licencia es copyleft)
+mindala estudiar 306366900         # clona a analisis/<repo> para leer el fuente
+mindala veredicto 306366900 --adoptar   --nota "su flujo OIDC nos sirve en bachue"
+mindala veredicto 148706208 --descartar --nota "firmware C, fuera de stack"
 
-**The licence has not changed and the code is still available to anyone who asks** — delivered with a signature and a checksum, at no cost, with no NDA, no restriction on what you publish about it, and no expiry. Request it at **xiliux.com**.
+# R3 · fuentes extra: pescar repos de GitHub mencionados fuera de GitHub.
+mindala hn --query "post-quantum rust"        # Hacker News (Algolia)
+mindala lobsters --tag rust                     # lobste.rs (o sin --tag: los top)
+mindala awesome rust-unofficial/awesome-rust    # repos enlazados en una awesome-list
 
----
+# R4 · enganche: de lo ADOPTADO nace la ficha de tarea para el proyecto destino.
+mindala tareas                     # emite cada ficha (asunto, proyecto, contexto)
+mindala tarea-lista 306366900      # marca que ya la registraste en el destino
 
-## What it does
+# R5 · inteligencia: noticias de seguridad, cripto e IA (11 fuentes, keyless).
+mindala feed                       # trae los feeds curados (dep-free RSS/Atom)
+mindala kev                        # catálogo CISA KEV: los CVE EXPLOTADOS de verdad en el
+                                   # mundo → categoriza por destino (le da casa al CVE
+                                   # no-Rust, p.ej. UEFI→zaque, que RustSec no ve)
+mindala vulnx "post-quantum"       # inteligencia de vulns de ProjectDiscovery (EPSS,
+mindala vulnx "rustls" --limite 20 #   exploits/POCs, prioridad nuclei; productos Y crates)
+                                   #   → categoriza por destino. Requiere `vulnx` (go install)
+mindala saber                      # el digest, lo relevante primero
+mindala saber --destino nexus      # solo lo que toca un producto
+mindala saber --destino zaque      # p.ej. los CVE de arranque/integridad
+mindala saber --destino seguridad  # intel de seguridad-LLM (prompt injection, exfiltración,
+                                   # jailbreak) para la defensa viva: olfateador/razonador
+mindala triar-saber <url> --estado visto       # sacarlo del digest
 
-The *mindalá* were the long-distance Muisca traders of pre-Columbian Colombia: they brought valuable materials from distant markets to enrich the whole society. This tool does the same for software techniques — it goes out to public sources, finds what is valuable, categorizes it toward the projects that can use it, and queues it for expert review.
+# R5·80/20 · la PASADA DE RAZONAMIENTO. El mapa de palabras (categoria.rs) es la vía
+# rápida: acierta lo claro y sale seco en la prosa de un CVE/noticia. Para «capturar lo
+# que sirve» a nivel razonador, el criterio (Claude-en-el-loop) lee lo de BAJA confianza
+# y lo rutea por JUICIO — el mismo 80/20 de nexus: el código empareja, Claude razona.
+mindala razonar                    # lista lo NO ruteado (sin_clasificar) con su cuerpo
+mindala razonar --incluir-debiles --limite 60   # además los de 1 sola señal (puntaje≤1)
+mindala rutear <url> --destino bachue --nota "es un bypass de OIDC"   # fijar por juicio
+mindala rutear <url> --destino zaque --lead --nota "idea: verificar integridad de extensiones"
+                                   # --lead lo eleva a IDEA (R7). `rutear` marca el ítem
+                                   # como razonado: `recategorizar` ya no lo pisa.
 
-**80/20 design**: the program discovers, categorizes, and queues (80% mechanical); the expert (Claude-in-the-loop) reads the source, respects the licence, and decides whether to adopt or discard (20% that judges). Judgement is not automated.
+# R6 · contrainteligencia: dep→CVE con `cargo audit` en local sobre cada repo.
+mindala audit --raiz /mnt/data     # audita los Cargo.lock reales; recuerda avisos
+mindala avisos                     # el digest de avisos pendientes de triaje
+mindala triar-aviso quipu YANKED chacha20 --estado aceptado --nota "vendored-moot"
+mindala expuesto                   # R5×R6: qué advisory del feed toca crates que consumes
+mindala consume chacha20           # consulta puntual: qué repos lo usan, y en qué versión
 
-### Intelligence sources
+# R7 · taller de IDEAS: de una noticia sale el «cómo» para un producto.
+mindala triar-saber <url> --estado lead --nota "nexus: detector de exfil por imagen"
+mindala ideas                      # las ideas vivas (el «cómo» completo va a docs)
 
-- **GitHub** — search by topic, language, stars, and recent activity; dedup by repository id so already-seen items are never re-surfaced
-- **Hacker News**, **lobste.rs** — keyword search over stories and comments
-- **Awesome lists** — repositories linked in curated awesome-\* lists
-- **crates.io** — recently published crates and their upstream source repositories
-- **13 curated news feeds** — security, cryptography, AI safety, Rust ecosystem; dep-free RSS/Atom, no API key required
-- **CISA KEV** — exploited-in-the-wild CVEs, categorized by project area
-- **OSV** — open-source vulnerability advisories by package (all ecosystems, keyless)
-- **ProjectDiscovery vulnx** — vulnerability intelligence with EPSS scores and PoC availability
+# R8 · CARACTERÍSTICAS: la unidad de valor es la TÉCNICA, no el repo.
+# El criterio caza la característica de una fuente (repo o noticia) y la reimplementa
+# propia en el estándar (D9/D38) — nunca adopta el repo.
+mindala cobertura                  # «revisar TODOS»: examinadas vs pendientes por destino
+mindala recategorizar              # re-aplica el mapa vigente a los PENDIENTES (tras
+                                   # cambiar categoria.rs); no toca lo ya sentenciado
+mindala caracteristica --que "un <dialog> que trae htmx se abre modal" \
+    --destino boi --como "comportamiento boi: showModal + close→remove" \
+    --licencia Unlicense --de-repo 532074755        # cazar de un repo…
+mindala caracteristica --que "…" --destino nexus --como "…" --de-noticia <url>  # …o de una noticia
+mindala ligar-fuente 3 --de-repo 12345             # la misma característica llega de otra fuente
+mindala caracteristicas --destino boi --estado sirve
+mindala veredicto8 3 --sirve       # vale implementarla (o --descartar / --implementada)
+mindala implementar                # emite la ficha de IMPLEMENTAR-en-el-estándar de lo que sirve
+mindala caracteristica-lista 3     # marca que ya la registraste como tarea en su destino
+```
 
-### What it produces
+La memoria vive en `mindala.db` (SQLite, `--bd` para cambiar la ruta). Es memoria
+de verdad: lo ya visto no se re-descubre (dedup por `id_github`), un candidato
+pendiente se refresca si el repo tuvo actividad nueva, y uno con veredicto queda
+**congelado** — no se re-estudia.
 
-For each source, `mindala` stores findings in a local SQLite database (`mindala.db`), categorizes them toward the relevant project area, and surfaces them in a digest. Already-seen items are not re-discovered. Items with a verdict are frozen and not re-studied.
+## Reglas de nacimiento
 
-The **characteristics layer** (R8) shifts the unit of value from the repository to the **technique**: a characteristic is a concrete capability worth reimplementing in-house, independent of the source repo. The workflow is: find → study → extract technique → reimplement own (not copy). `--adopt` on a repository means "examined, contributed characteristic(s)"; the value lives in the extracted technique, not the repo itself.
+- **Keyless/soberano.** GitHub API pública; el PAT es opcional y de bajo privilegio.
+- **Estatuto.** Solo estudio y divulgación responsable: mindalá clona y lee, nunca ataca.
+- **La licencia manda.** Cada candidato guarda su SPDX; AGPL/GPL se reimplementan sin copiar.
+- **Rust** (D38), estándar de nacimiento de Xiliux (bagué), MIT.
 
-Dependency intelligence (R6) cross-references the advisory feeds with the crates your projects actually consume, so you see only the advisories that apply to your stack.
+## Estado
 
-The **reasoning layer** (R5 80/20) handles low-confidence categorizations: the keyword map handles clear cases automatically; the expert routes ambiguous or low-score items by judgement (`rutear`), and those manual routings are preserved across re-categorization runs.
+Todas las rebanadas del `DISENO.md` están **HECHAS**:
 
-### Measured quality
+- **R1 · descubrir** — `buscar` por topic de GitHub.
+- **R2 · triaje** — `cola`, `ver`, `estudiar` (clona a `analisis/`), `veredicto`.
+- **R3 · fuentes extra** — `hn`, `lobsters`, `awesome` (resuelven repos vía la API,
+  con dedup para no gastar peticiones).
+- **R4 · enganche** — `tareas` emite la ficha de tarea de lo adoptado (sin auto-código);
+  `tarea-lista` cierra el enganche.
+- **R5 · inteligencia** (2026-09-27, fuentes ampliadas 2026-09-28) — `feed`/`saber`/
+  `triar-saber`: 11 fuentes de noticias (seguridad, cripto, IA, Rust), dep-free/keyless.
+  **El seam 80/20 del clasificador** (2026-10-30) — `razonar`/`rutear`: el mapa de
+  palabras es la vía rápida (acierta lo claro, sale seco en la prosa); el criterio
+  razona sobre lo de baja confianza y lo rutea por juicio (`razonado=1`, que
+  `recategorizar` respeta). El resumen se guarda para que inserción y recategorización
+  usen la MISMA costura (título+cuerpo, D33) y Claude juzgue por el cuerpo.
+  **Fallback por FUENTE**: una fuente mono-dominio (iacr-eprint, cryptography-engineering,
+  embrace-the-red, portswigger) fija el destino cuando el texto sale sin_clasificar — el
+  dominio lo da la fuente, no el título en prosa (294+ noticias rescatadas, 2026-10-30).
+- **R6 · contrainteligencia** (2026-09-27) — `audit`/`avisos`/`triar-aviso`: lazo
+  dep→CVE con `cargo audit` local; `expuesto` cruza advisories del feed × crates consumidos.
+- **R7 · taller de ideas** (2026-09-28) — `ideas`: de una noticia (`lead`) sale el
+  «cómo» para un producto; el detalle vive en `conocimiento/proyectos/mindala/ideas/`.
+- **R8 · características** (2026-09-28) — la unidad de valor pasa del REPO a la
+  CARACTERÍSTICA (técnica): `caracteristica`/`caracteristicas`/`ligar-fuente`/
+  `veredicto8`/`implementar`/`caracteristica-lista`, y `cobertura` como disciplina de
+  «revisar TODOS». Una característica es transversal a las fuentes (repo o noticia) y
+  su desenlace es reimplementarla propia en el estándar, no adoptar el repo (D9/D38/D32).
 
-104 tests (96 unit with paired probe/control per detector + 8 end-to-end tests that launch the real binary) · `cargo clippy -D warnings` green · verified against live sources (GitHub, HN, lobste.rs, crates.io, all 13 feeds, CISA KEV, OSV).
+  **El `veredicto` sobre un REPO se reorienta**: `--adoptar` ya no significa «tomar el
+  repo» sino «examinado, aportó característica(s)» (que se registran con
+  `caracteristica`); `--descartar` es «examinado, nada que cazar». El repo es una
+  FUENTE que se examina; el valor vive en las características.
 
----
-
-## Español
-
-Agregador de inteligencia técnica: descubre, categoriza y encola hallazgos de fuentes públicas para revisión y adopción humana. MIT. Rust.
-
----
-
-## El código no se publica aquí
-
-Desde agosto de 2026, el código de este proyecto **no se aloja en GitHub**, ni se distribuye por ningún registro de paquetes.
-
-No es abandono ni un incidente: es una decisión. A lo largo de 2026 los registros de paquetes y las plataformas de código han sufrido ataques encadenados de cadena de suministro —Shai-Hulud, ChainDrop en agosto, extensiones maliciosas que se llevaron miles de repositorios privados—. Alojar aquí el código dejó de ser una decisión neutra.
-
-**La licencia no cambia y el código se entrega a quien lo pida**, con su firma y su suma de verificación, sin coste, sin NDA, sin restricción sobre lo que publique y sin caducidad. Solicítalo en **xiliux.com**.
-
----
-
-## Qué hace
-
-Los *mindalá* eran los mercaderes muiscas de larga distancia: traían materiales valiosos de mercados lejanos para enriquecer a toda la sociedad. Esta herramienta hace lo mismo con técnicas de software: sale a fuentes públicas, encuentra lo valioso, lo categoriza hacia los proyectos que lo aprovechan y lo encola para que el criterio lo estudie.
-
-**Diseño 80/20**: el programa descubre, categoriza y encola (el 80% mecánico); el criterio (Claude-en-el-loop) estudia el fuente, respeta la licencia y decide adoptar o descartar (el 20% que juzga). El juicio no se automatiza.
-
-### Fuentes de inteligencia
-
-- **GitHub** — búsqueda por topic, lenguaje, estrellas y actividad reciente; dedup por id de repositorio para no re-descubrir lo ya visto
-- **Hacker News**, **lobste.rs** — búsqueda por palabras clave
-- **Awesome lists** — repositorios enlazados en listas awesome-\* curadas
-- **crates.io** — crates publicados recientemente y sus repositorios de origen
-- **13 feeds curados** — seguridad, criptografía, IA, ecosistema Rust; RSS/Atom dep-free, sin API key
-- **CISA KEV** — CVEs explotados en el mundo real, categorizados por área de proyecto
-- **OSV** — advisories de vulnerabilidades en código abierto por paquete (todos los ecosistemas, sin API key)
-- **ProjectDiscovery vulnx** — inteligencia de vulnerabilidades con puntuación EPSS y disponibilidad de PoC
-
-### Qué produce
-
-Por cada fuente, `mindala` almacena hallazgos en una base de datos SQLite local (`mindala.db`), los categoriza hacia el área de proyecto correspondiente y los muestra en un digest. Los ítems ya vistos no se re-descubren; los que tienen veredicto quedan congelados y no se vuelven a estudiar.
-
-La **capa de características** (R8) desplaza la unidad de valor del repositorio a la **técnica**: una característica es una capacidad concreta que vale reimplementar propia, independientemente del repo de origen. El flujo es: encontrar → estudiar → extraer técnica → reimplementar propio (no copiar). `--adoptar` sobre un repositorio significa "examinado, aportó características"; el valor vive en la técnica extraída, no en el repo.
-
-La inteligencia de dependencias (R6) cruza los feeds de advisories con los crates que tus proyectos consumen, mostrando solo los advisories que aplican a tu stack.
-
-La **capa de razonamiento** (R5 80/20) maneja las categorizaciones de baja confianza: el mapa de palabras resuelve los casos claros automáticamente; el criterio rutea por juicio los ítems ambiguos (`rutear`), y esos enrutamientos manuales se preservan en las re-categorizaciones.
-
-### Calidad medida
-
-104 pruebas (96 unitarias con parejas sonda/control por detector + 8 E2E que arrancan el binario real) · `cargo clippy -D warnings` verde · verificado contra fuentes reales (GitHub, HN, lobste.rs, crates.io, los 13 feeds, CISA KEV, OSV).
-
----
-
-*mindala* — © 2026 Juan Carlos Isaza. Licencia **MIT**.
+104 pruebas en verde (96 unitarias con parejas aguja/control + 8 E2E que arrancan el
+binario real) + clippy `-D warnings`. Verificado contra la red real (GitHub, HN,
+lobste.rs, awesome-rust, los 11 feeds, CISA KEV y vulnx) y con un clon real.

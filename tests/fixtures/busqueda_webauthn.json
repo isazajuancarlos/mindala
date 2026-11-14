@@ -1,0 +1,39 @@
+{
+  "total_count": 3,
+  "incomplete_results": false,
+  "items": [
+    {
+      "id": 111,
+      "full_name": "kanidm/webauthn-rs",
+      "html_url": "https://github.com/kanidm/webauthn-rs",
+      "description": "WebAuthn library for Rust web servers",
+      "language": "Rust",
+      "topics": ["webauthn", "fido2", "authentication"],
+      "stargazers_count": 900,
+      "pushed_at": "2026-09-10T12:00:00Z",
+      "license": { "spdx_id": "MPL-2.0" }
+    },
+    {
+      "id": 222,
+      "full_name": "ejemplo/pqc-kem",
+      "html_url": "https://github.com/ejemplo/pqc-kem",
+      "description": "Post-quantum KEM with ML-KEM (kyber) primitives",
+      "language": "Rust",
+      "topics": ["cryptography", "post-quantum", "ml-kem"],
+      "stargazers_count": 300,
+      "pushed_at": "2026-08-01T00:00:00Z",
+      "license": { "spdx_id": "AGPL-3.0" }
+    },
+    {
+      "id": 333,
+      "full_name": "ejemplo/retro-fun",
+      "html_url": "https://github.com/ejemplo/retro-fun",
+      "description": "A relaxing retro game, nothing serious",
+      "language": "C",
+      "topics": ["game", "emulator"],
+      "stargazers_count": 40,
+      "pushed_at": "2026-07-01T00:00:00Z",
+      "license": null
+    }
+  ]
+}

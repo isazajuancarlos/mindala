@@ -1,0 +1,14 @@
+-- SPDX-FileCopyrightText: 2026 Juan Carlos Isaza
+-- SPDX-License-Identifier: MIT
+--
+-- Una sola COSTURA de categorización (2026-10-30). La inserción categoriza por
+-- TÍTULO+RESUMEN (un advisory nombra el crate/dominio en el cuerpo, D16), pero el
+-- resumen se descartaba, así que `recategorizar` solo tenía el TÍTULO: una costura
+-- distinta y más débil que la de inserción (viola D33 "misma costura" / D32 "un valor
+-- con dos lecturas son dos campos"). Al reaplicar el mapa, `recategorizar` DEGRADABA el
+-- ruteo —p. ej. los CVE de `rustls` ruteados por su cuerpo a `seguridad` caían a
+-- sin_clasificar al perder el cuerpo—. Guardar el resumen cierra el hueco: las dos
+-- costuras usan el mismo texto, y la pasada de razonamiento (Claude) lee el cuerpo, no
+-- solo el título. Capado a 2000 chars en origen (`conocimiento.rs`). Las filas viejas
+-- nacen con '' y se rellenan cuando su fuente se re-ingiere (la rama `existe`).
+ALTER TABLE conocimiento ADD COLUMN resumen TEXT NOT NULL DEFAULT '';
